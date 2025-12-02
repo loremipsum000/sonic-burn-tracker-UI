@@ -217,6 +217,12 @@ export default function SonicBurnTracker() {
   const [currency, setCurrency] = useState('S');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [data, setData] = useState(generateChartData(20, 'up', '7D'));
+  const [mounted, setMounted] = useState(false);
+
+  // Ensure component only renders chart on client-side
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Update mock data when timeframe changes
   useEffect(() => {
@@ -320,71 +326,77 @@ export default function SonicBurnTracker() {
 
             {/* Chart */}
             <div className="h-[250px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={data}>
-                  <defs>
-                    {/* Gradient breakdown based on user request:
-                      #FFCB67 9.98%
-                      #ED5409 36.51%
-                      #506179 58.43%
-                      #214E81 73.82%
-                      #102D3C 86.12%
+              {mounted ? (
+                <ResponsiveContainer width="100%" height="100%" minHeight={250}>
+                  <AreaChart data={data}>
+                    <defs>
+                      {/* Gradient breakdown based on user request:
+                        #FFCB67 9.98%
+                        #ED5409 36.51%
+                        #506179 58.43%
+                        #214E81 73.82%
+                        #102D3C 86.12%
+                        
+                        Opacity adjustment: 0.7 at top -> 0.1 at bottom
+                      */}
+                      <linearGradient id="sonicGradient" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="250">
+                        <stop offset="9.98%" stopColor="#FFCB67" stopOpacity={0.7}/>
+                        <stop offset="36.51%" stopColor="#ED5409" stopOpacity={0.6}/>
+                        <stop offset="58.43%" stopColor="#506179" stopOpacity={0.4}/>
+                        <stop offset="73.82%" stopColor="#214E81" stopOpacity={0.25}/>
+                        <stop offset="86.12%" stopColor="#102D3C" stopOpacity={0.1}/>
+                      </linearGradient>
                       
-                      Opacity adjustment: 0.7 at top -> 0.1 at bottom
-                    */}
-                    <linearGradient id="sonicGradient" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="250">
-                      <stop offset="9.98%" stopColor="#FFCB67" stopOpacity={0.7}/>
-                      <stop offset="36.51%" stopColor="#ED5409" stopOpacity={0.6}/>
-                      <stop offset="58.43%" stopColor="#506179" stopOpacity={0.4}/>
-                      <stop offset="73.82%" stopColor="#214E81" stopOpacity={0.25}/>
-                      <stop offset="86.12%" stopColor="#102D3C" stopOpacity={0.1}/>
-                    </linearGradient>
-                    
-                    {/* Stroke Gradient Fix: 
-                      Using gradientUnits="userSpaceOnUse" to lock the gradient to the container coordinates 
-                      instead of the bounding box of the line path. 
-                      y2="250" matches the container height (h-[250px]).
-                    */}
-                    <linearGradient id="strokeGradient" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="250">
-                      <stop offset="9.98%" stopColor="#FFCB67" stopOpacity={1}/>
-                      <stop offset="36.51%" stopColor="#ED5409" stopOpacity={1}/>
-                      <stop offset="58.43%" stopColor="#506179" stopOpacity={1}/>
-                      <stop offset="73.82%" stopColor="#214E81" stopOpacity={1}/>
-                      <stop offset="86.12%" stopColor="#102D3C" stopOpacity={1}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff08" />
-                  <XAxis 
-                    dataKey="name" 
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: '#444', fontSize: 10 }}
-                    dy={10}
-                  />
-                  <YAxis 
-                    orientation="right" 
-                    tick={{ fill: '#444', fontSize: 10 }} 
-                    axisLine={false}
-                    tickLine={false}
-                    tickFormatter={(value) => value.toFixed(0)}
-                    domain={['dataMin - 50', 'dataMax + 50']}
-                  />
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: '#111', borderColor: '#333', color: '#fff' }}
-                    itemStyle={{ color: '#aaa' }}
-                    cursor={{ stroke: '#ffffff20', strokeWidth: 1 }}
-                  />
-                  {/* Stroke color uses the new userSpaceOnUse gradient for fixed vertical mapping */}
-                  <Area 
-                    type="monotone" 
-                    dataKey="value" 
-                    stroke="url(#strokeGradient)" 
-                    strokeWidth={3}
-                    fillOpacity={1} 
-                    fill="url(#sonicGradient)" 
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+                      {/* Stroke Gradient Fix: 
+                        Using gradientUnits="userSpaceOnUse" to lock the gradient to the container coordinates 
+                        instead of the bounding box of the line path. 
+                        y2="250" matches the container height (h-[250px]).
+                      */}
+                      <linearGradient id="strokeGradient" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="250">
+                        <stop offset="9.98%" stopColor="#FFCB67" stopOpacity={1}/>
+                        <stop offset="36.51%" stopColor="#ED5409" stopOpacity={1}/>
+                        <stop offset="58.43%" stopColor="#506179" stopOpacity={1}/>
+                        <stop offset="73.82%" stopColor="#214E81" stopOpacity={1}/>
+                        <stop offset="86.12%" stopColor="#102D3C" stopOpacity={1}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff08" />
+                    <XAxis 
+                      dataKey="name" 
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: '#444', fontSize: 10 }}
+                      dy={10}
+                    />
+                    <YAxis 
+                      orientation="right" 
+                      tick={{ fill: '#444', fontSize: 10 }} 
+                      axisLine={false}
+                      tickLine={false}
+                      tickFormatter={(value) => value.toFixed(0)}
+                      domain={['dataMin - 50', 'dataMax + 50']}
+                    />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#111', borderColor: '#333', color: '#fff' }}
+                      itemStyle={{ color: '#aaa' }}
+                      cursor={{ stroke: '#ffffff20', strokeWidth: 1 }}
+                    />
+                    {/* Stroke color uses the new userSpaceOnUse gradient for fixed vertical mapping */}
+                    <Area 
+                      type="monotone" 
+                      dataKey="value" 
+                      stroke="url(#strokeGradient)" 
+                      strokeWidth={3}
+                      fillOpacity={1} 
+                      fill="url(#sonicGradient)" 
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="w-full h-full bg-[#111]/50 animate-pulse rounded-lg flex items-center justify-center">
+                  <div className="text-gray-500 text-sm">Loading chart...</div>
+                </div>
+              )}
             </div>
           </div>
 
